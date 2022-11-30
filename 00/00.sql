@@ -1,0 +1,1 @@
+create macro fuel(weight) as weight/3 - 2;
