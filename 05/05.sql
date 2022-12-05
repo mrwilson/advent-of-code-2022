@@ -22,21 +22,33 @@ union all
       ELSE stacks.stack2
     END
   from
+    -- Get all the stuff from the last round of recursion or the original seed
     stacks
   join
+    -- Stop recursing when we run out of instructions
     halt on (stacks.round <= halt.halt)
   left join
+    -- Get instructions for this stack, if they exist, null otherwise
     instructions ins on (stacks.round == ins.rowid and stacks.stack_id in (ins.src, ins.dst))
   left join
+    -- If there is an instruction for this stack, get the source/from value ...
     stacks source on (source.round == stacks.round and source.stack_id = ins.src)
   left join
+    -- ... and the destination/to value
     stacks dst on (dst.round == stacks.round and dst.stack_id = ins.dst)
 ),
 top_crates(part1, part2) as (
-    select stack1[-1:] as part1, stack2[-1:] as part2
-    from stacks, halt
-    where stacks.round == halt.halt
-    order by stacks.stack_id
+    select
+        -- We only care about the top crate on each stack ...
+        stack1[-1:] as part1,
+        stack2[-1:] as part2
+    from
+        stacks, halt
+    where
+        -- ... and only the stacks from the final iteration
+        stacks.round == halt.halt
+    order by
+        stacks.stack_id
 )
 select
     string_agg(part1, '') as part1,
